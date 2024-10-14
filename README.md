@@ -1,4 +1,4 @@
-# Rgator_computer_ws
+# Rgator_supervisor_computer_ws
 
 ## ROS2 Packages:
 
