@@ -1,3 +1,0 @@
-float32 alt_potential
-float32 elec_potential
-float32 bat_potential

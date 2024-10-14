@@ -1,1 +1,0 @@
-float32 brake_pedal_position
