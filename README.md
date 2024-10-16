@@ -1,4 +1,8 @@
 # Rgator_supervisor_computer_ws
+ supervisor computer: localization, control, and vehicle interface
+ 
+ perception computer: sensor interface, perception, and planning
+
 
 ## ROS2 Packages:
 
