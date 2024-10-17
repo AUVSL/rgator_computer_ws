@@ -43,11 +43,12 @@ class DBW(Node):
         self.count = 0
 
         # can messages definations
-        # sent messages
-        self.teleop = can.Message(arbitration_id=0x18FFFF2A, data=[0x82, 0x7D, 0x00, 0x7D, 0xFF, 0xFF, 0xFF, 0xFF], is_extended_id=True)
+        # sent messages (arbitration_id = priority 0x18 & pgn # in hexidecimal & device address in hexicemial, data = initial hex command byte, the remaining bits are defaults with unassigned bytes being set to 0xFF or 0x00 arbitrary
         self.addressClaim = can.Message(arbitration_id=0x18EEFF2A, data=[0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80], is_extended_id=True)
-        self.heartBeat = can.Message(arbitration_id=0x18FFFF2A, data=[0x80, 0x31, 0x5D, 0x55, 0xFF, 0xFD, 0xFF, 0xFF], is_extended_id=True)
-        self.inhibitCmd = can.Message(arbitration_id=0x0CFE5A2A, data=[0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF], is_extended_id=True)
+        self.heartBeat    = can.Message(arbitration_id=0x18FFFF2A, data=[0x80, 0x31, 0x5D, 0x55, 0xFF, 0xFD, 0xFF, 0xFF], is_extended_id=True)
+        self.propulsion   = can.Message(arbitration_id=0x18FFFF2A, data=[0x81, 0x7D, 0x00, 0x7D, 0xFF, 0xFF, 0xFF, 0xFF], is_extended_id=True)
+        self.teleop       = can.Message(arbitration_id=0x18FFFF2A, data=[0x82, 0x7D, 0x00, 0x7D, 0xFF, 0xFF, 0xFF, 0xFF], is_extended_id=True)
+        self.inhibitCmd   = can.Message(arbitration_id=0x0CFE5A2A, data=[0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF], is_extended_id=True)
 
         # read messages
         self.notifier = can.Notifier(self.bus, [self.listener_callback])
@@ -66,12 +67,11 @@ class DBW(Node):
 
 
     def dbw_callback(self, msg):
-        inhibit = msg.parkbrake                 # 1 for lock; 0 for unlock
-        gear = msg.gear                         # 0 for neutral; 1 for forward; 2 for backward
-        throttle_percentage = msg.throttle      # 0 ~ 100 (%)
-        brake_percentage = msg.brake            # 0 ~ 100 (%)
-        steering_percentage = msg.steering      # -100 ~ 100 (%), left+, right-
-        # steering_percentage = 50.0
+        inhibit             = msg.parkbrake # 1 for lock; 0 for unlock
+        gear                = msg.gear      # 0 for neutral; 1 for forward; 2 for backward
+        throttle_percentage = msg.throttle  # 0 ~ 100 (%)
+        brake_percentage    = msg.brake     # 0 ~ 100 (%)
+        steering_percentage = msg.steering  # -100 ~ 100 (%), left+, right-
 
         if gear == 1:
             print('gear: forward')
@@ -85,16 +85,16 @@ class DBW(Node):
 
         brake_cmd = hex(int(250.0*brake_percentage/100.))
         steering_cmd = hex(int(250.0*(steering_percentage+100)/200.))
-    
 
-        self.teleop.data[1] = np.uint8(int(throttle_cmd, 16))
         # throttle
-
-        self.teleop.data[2] = np.uint8(int(brake_cmd, 16))
+        self.teleop.data[1] = np.uint8(int(throttle_cmd, 16))
+        
         # brake
-
-        self.teleop.data[3] = np.uint8(int(steering_cmd, 16))
+        self.teleop.data[2] = np.uint8(int(brake_cmd, 16))
+        
         # steering
+        self.teleop.data[3] = np.uint8(int(steering_cmd, 16))
+        
 
         if inhibit == 1:
             self.inhibitCmd.data[4] = 0x10
@@ -102,6 +102,8 @@ class DBW(Node):
             self.inhibitCmd.data[4] = 0x00
         
         self.bus.send(self.teleop)
+        self.bus.send(self.propulsion)
+        
         print('sending control command')
 
 
