@@ -1,5 +1,7 @@
 import numpy as np
 
+# This test is aimed to demonstrate the ability of the function to handle various throttle and steering commands and to compare the old and new methods of type-casting.
+
 throttle_cmd_old = []
 throttle_cmd_new = []
 steering_cmd_old = []
@@ -28,7 +30,7 @@ for i in range(12):
     steering_cmd_old.append(np.uint8(int(hex(int(250.0*(steering_percentage+100)/200.)), 16)))
     steering_cmd_new.append(np.uint8(250.0*(steering_percentage+100)/200.))
 
-print(throttle_cmd_old)
-print(throttle_cmd_new)
-print(steering_cmd_old)
-print(steering_cmd_new)
+print("Old throttle_cmd: ", throttle_cmd_old)
+print("New throttle_cmd: ", throttle_cmd_new)
+print("Old steering_cmd: ", steering_cmd_old)
+print("New steering_cmd: ", steering_cmd_new)

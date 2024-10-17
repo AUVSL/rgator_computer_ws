@@ -87,6 +87,20 @@ class DBW(Node):
         ttle  # 0 ~ 100 (%)
         steering_percentage = msg.steering  # -100 ~ 100 (%), left+, right-
 
+        if throttle_percentage < 0:
+            throttle_percentage = 0
+            print("WARNING: throttle percentage below range")
+        elif throttle_percentage > 100:
+            throttle_percentage = 100
+            print("WARNING: throttle percentage above range")
+
+        if steering_percentage < -100:
+            steering_percentage = -100
+            print("WARNING: steering percentage below range")
+        elif steering_percentage > 100:
+            steering_percentage = 100
+            print("WARNING: steering percentage above range")
+
         if gear == 1:
             print('gear: forward')
             throttle_cmd = np.uint8(250.0*(throttle_percentage+100)/200.)
