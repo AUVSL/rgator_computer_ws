@@ -20,10 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'dbw_neo = dbw.dbw_neo:main',
-            'dbw_read = dbw.dbw_read:main',
-            'can_test = dbw.can_test:main',
-            'can_test_2 = dbw.can_test_2:main'
+            'dbw_read = dbw.dbw_read:main'
         ],
     },
 )
