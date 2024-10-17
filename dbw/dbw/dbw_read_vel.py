@@ -89,15 +89,15 @@ class DBW(Node):
 
         if gear == 1:
             print('gear: forward')
-            throttle_cmd = np.uint8(int(hex(int(250.0*(throttle_percentage+100)/200.)), 16))
+            throttle_cmd = np.uint8(250.0*(throttle_percentage+100)/200.)
         elif gear == 2:
             print('gear: backward')
-            throttle_cmd = np.uint8(int(hex(int(250.0 * (100.0 - throttle_percentage) / 200.)), 16))
+            throttle_cmd = np.uint8(250.0*(100.0 - throttle_percentage)/200.)
         else:
             print('gear: neutral')
-            throttle_cmd = np.uint8(int(hex(int(250.0 * (0 + 100) / 200.)), 16))
+            throttle_cmd = np.uint8(250.0*(0+100)/200.)
 
-        steering_cmd = np.uint8(int(hex(int(250.0*(steering_percentage+100)/200.)), 16))
+        steering_cmd = np.uint8(250.0*(steering_percentage+100)/200.)
 
         # throttle
         self.set_2_bytes_number(self.propulsion.data, throttle_cmd, 1)
