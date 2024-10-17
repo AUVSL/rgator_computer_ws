@@ -1,0 +1,3 @@
+uint16 parking_brake_switch
+float32 wheel_based_speed
+uint16 brake_switch

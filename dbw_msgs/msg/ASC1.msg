@@ -1,0 +1,1 @@
+uint16 motion_inhibit

@@ -1,0 +1,2 @@
+float32 accel_pedal_position
+uint16 accel_pedal_switch

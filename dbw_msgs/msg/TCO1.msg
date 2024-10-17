@@ -1,0 +1,2 @@
+uint16 drive_recognize
+uint16 direction_indicator
