@@ -10,6 +10,7 @@ for i in range(8):
     byte_list[index]     = number & 0xFF  # Low byte
     byte_list[index + 1] = (number >> 8) & 0xFF  # High byte
 
-    print("Low byte: ", "{0:b}".format(byte_list[0]), "{0:x}".format(byte_list[0]))
     print("High byte: ", "{0:b}".format(byte_list[1]), "{0:x}".format(byte_list[1]))
+    print("Low byte: " , "{0:b}".format(byte_list[0]), "{0:x}".format(byte_list[0]))
+    
     print()

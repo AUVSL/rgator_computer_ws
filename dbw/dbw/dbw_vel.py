@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 
-from std_msgs.msg import String, Float32MultiArray
+from std_msgs.msg import Float32MultiArray
 from dbw_msgs.msg import Dbw
 
 import numpy as np
@@ -27,14 +27,11 @@ class DBW(Node):
         self.count = 0
 
         # can messages definations
-        # sent messages
-        self.teleop = can.Message(arbitration_id=0x18FFFF2A, data=[0x82, 0x7D, 0x00, 0x7D, 0xFF, 0xFF, 0xFF, 0xFF], is_extended_id=True)
+        # sent messages (arbitration_id = priority 0x18 & pgn # in hexidecimal & device address in hexicemial, data = initial hex command byte, the remaining bits are defaults with unassigned bytes being set to 0xFF or 0x00 arbitrary
         self.addressClaim = can.Message(arbitration_id=0x18EEFF2A, data=[0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80], is_extended_id=True)
-        self.heartBeat = can.Message(arbitration_id=0x18FFFF2A, data=[0x80, 0x31, 0x5D, 0x55, 0xFF, 0xFD, 0xFF, 0xFF], is_extended_id=True)
-        self.inhibitCmd = can.Message(arbitration_id=0x0CFE5A2A, data=[0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF], is_extended_id=True)
-
-        # read messages
-        
+        self.heartBeat    = can.Message(arbitration_id=0x18FFFF2A, data=[0x80, 0x31, 0x5D, 0x55, 0xFF, 0xFD, 0xFF, 0xFF], is_extended_id=True)
+        self.propulsion   = can.Message(arbitration_id=0x18FFFF2A, data=[0x81, 0x7D, 0x00, 0x7D, 0xFF, 0xFF, 0xFF, 0xFF], is_extended_id=True)
+        self.inhibitCmd   = can.Message(arbitration_id=0x0CFE5A2A, data=[0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF], is_extended_id=True)
 
         # send address claim message
         self.bus.send(self.addressClaim)
@@ -50,45 +47,68 @@ class DBW(Node):
         vcu_msg = Float32MultiArray()
         vcu_msg.data = []
         self.vcu_pub.publish(vcu_msg)
+        
+    def set_2_bytes_number(self, byte_list, number, index):
+        """Sets a 2-byte number in a list of bytes.
+
+        Args:
+            byte_list (list): The list of bytes.
+            number (int): The 2-byte number to set.
+            index (int): The starting index in the list to set the number.
+        """
+
+        if number < 0 or number > 65535:
+            raise ValueError("Number must be between 0 and 65535")
+
+        byte_list[index]     = number & 0xFF        # Low byte
+        byte_list[index + 1] = (number >> 8) & 0xFF # High byte
 
 
     def dbw_callback(self, msg):
         inhibit = msg.parkbrake                 # 1 for lock; 0 for unlock
         gear = msg.gear                         # 0 for neutral; 1 for forward; 2 for backward
         throttle_percentage = msg.throttle      # 0 ~ 100 (%)
-        brake_percentage = msg.brake            # 0 ~ 100 (%)
         steering_percentage = msg.steering      # -100 ~ 100 (%), left+, right-
-        # steering_percentage = 50.0
+
+        if throttle_percentage < 0:
+            throttle_percentage = 0
+            print("WARNING: throttle percentage below range")
+        elif throttle_percentage > 100:
+            throttle_percentage = 100
+            print("WARNING: throttle percentage above range")
+
+        if steering_percentage < -100:
+            steering_percentage = -100
+            print("WARNING: steering percentage below range")
+        elif steering_percentage > 100:
+            steering_percentage = 100
+            print("WARNING: steering percentage above range")
 
         if gear == 1:
             print('gear: forward')
-            throttle_cmd = hex(int(250.0*(throttle_percentage+100)/200.))
+            throttle_cmd = np.uint8(250.0*(throttle_percentage+100)/200.)
         elif gear == 2:
             print('gear: backward')
-            throttle_cmd = hex(int(250.0 * (100.0 - throttle_percentage) / 200.))
+            throttle_cmd = np.uint8(250.0*(100.0 - throttle_percentage)/200.)
         else:
             print('gear: neutral')
-            throttle_cmd = hex(int(250.0 * (0 + 100) / 200.))
+            throttle_cmd = np.uint8(250.0*(0+100)/200.)
 
-        brake_cmd = hex(int(250.0*brake_percentage/100.))
-        steering_cmd = hex(int(250.0*(steering_percentage+100)/200.))
-    
+        steering_cmd = np.uint8(250.0*(steering_percentage+100)/200.)
 
-        self.teleop.data[1] = np.uint8(int(throttle_cmd, 16))
         # throttle
-
-        self.teleop.data[2] = np.uint8(int(brake_cmd, 16))
-        # brake
-
-        self.teleop.data[3] = np.uint8(int(steering_cmd, 16))
+        self.set_2_bytes_number(self.propulsion.data, throttle_cmd, 1)
+        
         # steering
+        self.set_2_bytes_number(self.propulsion.data, steering_cmd, 3)
 
         if inhibit == 1:
             self.inhibitCmd.data[4] = 0x10
         else:
             self.inhibitCmd.data[4] = 0x00
         
-        self.bus.send(self.teleop)
+        self.bus.send(self.propulsion)
+        
         print('sending control command')
 
 def main():

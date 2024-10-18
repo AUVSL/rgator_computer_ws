@@ -4,7 +4,6 @@ import numpy as np
 
 lin_vel_step_size = 1/128
 lin_vel_min       = -250  # km/hr
-lin_vel_eff_min   = -40   # km/h
 lin_vel_eff_max   =  40   # km/h
 
 ang_vel_step_size = 1/1024
