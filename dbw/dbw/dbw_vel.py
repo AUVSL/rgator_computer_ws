@@ -25,12 +25,29 @@ class DBW(Node):
 
         # init varibables
         self.count = 0
+        self.lin_vel_step_size = 1/128
+        self.lin_vel_min       = -250  # km/hr
+        self.lin_vel_eff_max   =  40   # km/h
+
+        self.ang_vel_step_size = 1/1024
+        self.ang_vel_min       = -31.25 # rad/s
+        self.ang_vel_eff_max   =  31.25 # rad/s
+
+        self.lin_percent_range  = 100.0
+        self.ang_percent_range  = 200.0
+        self.ang_percent_offset = 100.0
+
+        self.lin_offset    = abs(self.lin_vel_min / self.lin_vel_step_size)
+        self.lin_spd_range = self.lin_vel_eff_max / self.lin_vel_step_size
+
+        self.ang_offset    = abs(self.ang_vel_min / self.ang_vel_step_size)
+        self.ang_spd_range = (self.ang_vel_eff_max - self.ang_vel_min) / self.ang_vel_step_size
 
         # can messages definations
         # sent messages (arbitration_id = priority 0x18 & pgn # in hexidecimal & device address in hexicemial, data = initial hex command byte, the remaining bits are defaults with unassigned bytes being set to 0xFF or 0x00 arbitrary
         self.addressClaim = can.Message(arbitration_id=0x18EEFF2A, data=[0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80], is_extended_id=True)
         self.heartBeat    = can.Message(arbitration_id=0x18FFFF2A, data=[0x80, 0x31, 0x5D, 0x55, 0xFF, 0xFD, 0xFF, 0xFF], is_extended_id=True)
-        self.propulsion   = can.Message(arbitration_id=0x18FFFF2A, data=[0x81, 0x7D, 0x00, 0x7D, 0xFF, 0xFF, 0xFF, 0xFF], is_extended_id=True)
+        self.propulsion   = can.Message(arbitration_id=0x18FFFF2A, data=[0x81, 0x7D, 0x00, 0x7D, 0x00, 0xFF, 0xFF, 0xFF], is_extended_id=True)
         self.inhibitCmd   = can.Message(arbitration_id=0x0CFE5A2A, data=[0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF], is_extended_id=True)
 
         # send address claim message
@@ -65,10 +82,10 @@ class DBW(Node):
 
 
     def dbw_callback(self, msg):
-        inhibit = msg.parkbrake                 # 1 for lock; 0 for unlock
-        gear = msg.gear                         # 0 for neutral; 1 for forward; 2 for backward
+        inhibit             = msg.parkbrake     # 1 for lock; 0 for unlock
+        gear                = msg.gear          # 0 for neutral; 1 for forward; 2 for backward
         throttle_percentage = msg.throttle      # 0 ~ 100 (%)
-        steering_percentage = msg.steering      # -100 ~ 100 (%), left+, right-
+        steering_percentage = msg.steering      # -100 ~ 100 (%), right-, left+
 
         if throttle_percentage < 0:
             throttle_percentage = 0
@@ -86,15 +103,15 @@ class DBW(Node):
 
         if gear == 1:
             print('gear: forward')
-            throttle_cmd = np.uint8(250.0*(throttle_percentage+100)/200.)
+            throttle_cmd = np.uint16(self.lin_spd_range *  throttle_percentage / self.lin_percent_range + self.lin_offset)
         elif gear == 2:
             print('gear: backward')
-            throttle_cmd = np.uint8(250.0*(100.0 - throttle_percentage)/200.)
+            throttle_cmd = np.uint16(self.lin_spd_range * -throttle_percentage / self.lin_percent_range + self.lin_offset)
         else:
             print('gear: neutral')
-            throttle_cmd = np.uint8(250.0*(0+100)/200.)
-
-        steering_cmd = np.uint8(250.0*(steering_percentage+100)/200.)
+            throttle_cmd = np.uint16(self.lin_offset)
+        
+        steering_cmd = np.uint16(self.ang_spd_range * (steering_percentage + self.ang_percent_offset) / self.ang_percent_range)
 
         # throttle
         self.set_2_bytes_number(self.propulsion.data, throttle_cmd, 1)
