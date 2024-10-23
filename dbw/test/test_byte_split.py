@@ -1,4 +1,3 @@
-
 # This test aims to check the byte split function which splits a given 2-byte (16-bit) value into 2 separate bytes (8 bits each).
 
 for i in range(8):
@@ -12,5 +11,5 @@ for i in range(8):
 
     print("High byte: ", "{0:b}".format(byte_list[1]), "{0:x}".format(byte_list[1]))
     print("Low byte: " , "{0:b}".format(byte_list[0]), "{0:x}".format(byte_list[0]))
-    
+
     print()
