@@ -19,7 +19,7 @@ for i in range(8):
     print()
 
 
-def merge_bytes(high_byte, low_byte):
+def merge_2_bytes(high_byte, low_byte):
     high = high_byte*2**8 + 0xFF
     low = 0xFF00 + low_byte
 

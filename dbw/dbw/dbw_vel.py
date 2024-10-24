@@ -1,7 +1,6 @@
 import rclpy
 from rclpy.node import Node
 
-from std_msgs.msg import Float32MultiArray
 from dbw_msgs.msg import Dbw
 
 import numpy as np
@@ -13,9 +12,6 @@ class DBW(Node):
 
         # init subscriber
         self.dbw_sub = self.create_subscription(Dbw, '/control_cmd', self.dbw_callback, 10)
-
-        # init publisher
-        self.vcu_pub = self.create_publisher(Float32MultiArray, '/vcu_data', 10)
 
         # init timer
         self.timer = self.create_timer(0.1, self.timer_callback)
@@ -61,11 +57,7 @@ class DBW(Node):
             self.bus.send(self.heartBeat)
             self.count = 0
 
-        vcu_msg = Float32MultiArray()
-        vcu_msg.data = []
-        self.vcu_pub.publish(vcu_msg)
-        
-    def set_2_bytes_number(self, byte_list, number, index):
+    def split_2_bytes(self, byte_list, number, index):
         """Sets a 2-byte number in a list of bytes.
 
         Args:
@@ -110,22 +102,22 @@ class DBW(Node):
         else:
             print('gear: neutral')
             throttle_cmd = np.uint16(self.lin_offset)
-        
+
         steering_cmd = np.uint16(self.ang_spd_range * (steering_percentage + self.ang_percent_offset) / self.ang_percent_range)
 
         # throttle
-        self.set_2_bytes_number(self.propulsion.data, throttle_cmd, 1)
-        
+        self.split_2_bytes(self.propulsion.data, throttle_cmd, 1)
+
         # steering
-        self.set_2_bytes_number(self.propulsion.data, steering_cmd, 3)
+        self.split_2_bytes(self.propulsion.data, steering_cmd, 3)
 
         if inhibit == 1:
             self.inhibitCmd.data[4] = 0x10
         else:
             self.inhibitCmd.data[4] = 0x00
-        
+
         self.bus.send(self.propulsion)
-        
+
         print('sending control command')
 
 def main():
