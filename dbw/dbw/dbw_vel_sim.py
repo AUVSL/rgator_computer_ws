@@ -21,7 +21,7 @@ class DBW(Node):
         self.timer = self.create_timer(0.1, self.timer_callback)
 
         # init can
-        self.bus = can.Bus(interface='socketcan', channel='can0', bitrate=250000)
+        # self.bus = can.Bus(interface='socketcan', channel='can0', bitrate=250000)
 
         # init varibables
         self.count = 0
@@ -51,14 +51,14 @@ class DBW(Node):
         self.inhibitCmd   = can.Message(arbitration_id=0x0CFE5A2A, data=[0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF], is_extended_id=True)
 
         # send address claim message
-        self.bus.send(self.addressClaim)
+        # self.bus.send(self.addressClaim)
 
     def timer_callback(self):
-        self.bus.send(self.inhibitCmd)
+        # self.bus.send(self.inhibitCmd)
 
         self.count += 1
         if self.count == 10:
-            self.bus.send(self.heartBeat)
+            # self.bus.send(self.heartBeat)
             self.count = 0
 
         propulsion_msg = UInt8MultiArray()
@@ -124,7 +124,7 @@ class DBW(Node):
         else:
             self.inhibitCmd.data[4] = 0x00
 
-        self.bus.send(self.propulsion)
+        # self.bus.send(self.propulsion)
 
         print('sending control command')
 
