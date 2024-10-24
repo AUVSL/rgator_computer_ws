@@ -30,17 +30,18 @@ for i in range(21):
     if gear == 1:
         # print('gear: forward')
         throttle_cmd = np.uint16(lin_spd_range *  throttle_percentage / lin_percent_range + lin_offset)
-        throttle_cmd_new.append(throttle_cmd)
     elif gear == 2:
         # print('gear: backward')
         throttle_cmd = np.uint16(lin_spd_range * -throttle_percentage / lin_percent_range + lin_offset)
-        throttle_cmd_new.append(throttle_cmd)
     else:
         # print('gear: neutral')
         throttle_cmd = np.uint16(lin_offset)
-        throttle_cmd_new.append(throttle_cmd)
-
     steering_cmd     = np.uint16(ang_spd_range * (steering_percentage + ang_percent_offset) / ang_percent_range)
+
+    # throttle_cmd = throttle_cmd * lin_vel_step_size + lin_vel_min
+    # steering_cmd = steering_cmd * ang_vel_step_size + ang_vel_min
+
+    throttle_cmd_new.append(throttle_cmd)
     steering_cmd_new.append(steering_cmd)
 
 print(throttle_cmd_new)
