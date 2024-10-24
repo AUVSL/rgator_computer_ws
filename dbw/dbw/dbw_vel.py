@@ -57,8 +57,8 @@ class DBW(Node):
             self.bus.send(self.heartBeat)
             self.count = 0
 
-    def split_2_bytes(self, byte_list, number, index):
-        """Sets a 2-byte number in a list of bytes.
+    def set_2_byte_number(self, byte_list, number, index):
+        """Split a 2-byte number in a list of bytes.
 
         Args:
             byte_list (list): The list of bytes.
@@ -69,8 +69,8 @@ class DBW(Node):
         if number < 0 or number > 65535:
             raise ValueError("Number must be between 0 and 65535")
 
-        byte_list[index]     = number & 0xFF        # Low byte
-        byte_list[index + 1] = (number >> 8) & 0xFF # High byte
+        byte_list[index]     = (number >> 8) & 0xFF # High byte
+        byte_list[index + 1] =        number & 0xFF # Low byte
 
 
     def dbw_callback(self, msg):
@@ -106,10 +106,10 @@ class DBW(Node):
         steering_cmd = np.uint16(self.ang_spd_range * (steering_percentage + self.ang_percent_offset) / self.ang_percent_range)
 
         # throttle
-        self.split_2_bytes(self.propulsion.data, throttle_cmd, 1)
+        self.set_2_byte_number(self.propulsion.data, throttle_cmd, 1)
 
         # steering
-        self.split_2_bytes(self.propulsion.data, steering_cmd, 3)
+        self.set_2_byte_number(self.propulsion.data, steering_cmd, 3)
 
         if inhibit == 1:
             self.inhibitCmd.data[4] = 0x10

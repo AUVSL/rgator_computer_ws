@@ -4,6 +4,7 @@ import numpy as np
 
 propulsion   = can.Message(arbitration_id=0x18FFFF2A, data=[0x81, 0x7D, 0x00, 0x7D, 0x00, 0xFF, 0xFF, 0xFF], is_extended_id=True)
 
+
 lin_vel_step_size = 1/128
 lin_vel_min       = -250  # km/hr
 lin_vel_eff_max   =  40   # km/h
@@ -22,10 +23,17 @@ lin_spd_range = lin_vel_eff_max / lin_vel_step_size
 ang_offset    = abs(ang_vel_min / ang_vel_step_size)
 ang_spd_range = (ang_vel_eff_max - ang_vel_min) / ang_vel_step_size
 
-data_new = []
+throttle_vel_new = []
+steering_vel_new = []
 
-def set_2_bytes_number(byte_list, number, index):
-        """Sets a 2-byte number in a list of bytes.
+def merge_2_bytes(high_byte, low_byte):
+    high = high_byte*2**8 + 0x00FF
+    low  =         0xFF00 + low_byte
+
+    return high & low
+
+def set_2_byte_number(byte_list, number, index):
+        """Split a 2-byte number in a list of bytes.
 
         Args:
             byte_list (list): The list of bytes.
@@ -36,12 +44,16 @@ def set_2_bytes_number(byte_list, number, index):
         if number < 0 or number > 65535:
             raise ValueError("Number must be between 0 and 65535")
 
-        byte_list[index]    = (number >> 8) & 0xFF # High byte
-        byte_list[index + 1] = number & 0xFF        # Low byte
+        byte_list[index]     = (number >> 8) & 0xFF # High byte
+        byte_list[index + 1] =        number & 0xFF # Low byte
 
-for i in range(11):
-    throttle_percentage = 150 * i/10
-    steering_percentage = 200 * i/10 - 150
+
+for i in range(21):
+    # throttle_percentage = 150 * i/10
+    # steering_percentage = 200 * i/10 - 150
+
+    throttle_percentage = 100/20 * i
+    steering_percentage = 200/20 * i - 100
 
     gear = i%3
 
@@ -72,11 +84,22 @@ for i in range(11):
     steering_cmd = np.uint16(ang_spd_range * (steering_percentage + ang_percent_offset) / ang_percent_range)
 
     # throttle
-    set_2_bytes_number(propulsion.data, throttle_cmd, 1)
+    set_2_byte_number(propulsion.data, throttle_cmd, 1)
 
     # steering
-    set_2_bytes_number(propulsion.data, steering_cmd, 3)
+    set_2_byte_number(propulsion.data, steering_cmd, 3)
 
-    data_new.append(propulsion.data)
+    throttle_int = merge_2_bytes(propulsion.data[1], propulsion.data[2])
+    steering_int = merge_2_bytes(propulsion.data[3], propulsion.data[4])
 
-print(data_new)
+    # throttle_vel = throttle_cmd * lin_vel_step_size + lin_vel_min
+    # steering_vel = steering_cmd * ang_vel_step_size + ang_vel_min
+
+    throttle_vel = throttle_int * lin_vel_step_size + lin_vel_min
+    steering_vel = steering_int * ang_vel_step_size + ang_vel_min
+
+    throttle_vel_new.append(throttle_vel)
+    steering_vel_new.append(steering_vel)
+
+print(throttle_vel_new)
+print(steering_vel_new)
