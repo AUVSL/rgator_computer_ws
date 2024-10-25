@@ -49,12 +49,12 @@ void writeToCSVfile(std::string name, Eigen::MatrixXd matrix)
 
 int main(int argc, char **argv)
 {   
-    double T = 50, dt = 1/T, max = 70, min = -70, Kp = 10, Kd = 5, Ki = 2;
+    double T = 50, dt = 1/T, max = 70, min = -70, Kp = 10, Ki = 2, Kd = 5;
 
     //make a server object that callsback odomentry information, an object to analysis the relevant waypoints, if the vehcile should stop, path errors fed into the controller, and a controller object
     auvsl::Server*     srvrObj = new auvsl::Server;
     auvsl::Environment* envObj = new auvsl::Environment;
-    auvsl::PID*         pidObj = new auvsl::PID(dt, max, min, Kp, Kd, Ki);
+    auvsl::PID*         pidObj = new auvsl::PID(dt, max, min, Kp, Ki, Kd);
     
     rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("fuzzyControl");

@@ -8,7 +8,7 @@ namespace auvsl
     {
         public:
             // Contructor and destructor
-            PID(double dt, double max, double min, double Kp, double Kd, double Ki);
+            PID(double dt, double max, double min, double Kp, double Ki, double Kd);
             ~PID();
 
             // Returns the manipulated variable given a setpoint and current process value

@@ -10,14 +10,14 @@
 namespace auvsl
 {
     // Constructor
-    PID::PID(double dt, double max, double min, double Kp, double Kd, double Ki) :
+    PID::PID(double dt, double max, double min, double Kp, double Ki,  double Kd) :
         _dt(dt),
         _max(max),
         _min(min),
         _Kp(Kp),
-        _Kd(Kd),
         _Ki(Ki),
-        _pre_error(0),
+        _Kd(Kd),
+        _prev_error(0),
         _integral(0)
     {
     }
