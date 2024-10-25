@@ -8,7 +8,7 @@ class Controller
 {
     public:
         Controller(double dt, double Kp, double Ki, double Kd);
-        double calculate(double new_err);j
+        double calculate(double new_err);
         ~Controller();
 
     private:

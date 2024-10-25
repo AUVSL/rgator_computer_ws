@@ -34,12 +34,8 @@ namespace auvsl
 
         // compute the north east down position in meters from the latitude, longitude, and altitude in degrees
         cppmap3d::geodetic2enu(lat, lon, alt, lat0, lon0, alt0, odomPos(1), odomPos(2), throwAway);
-
-        if(firstCall == true) {
-            firstCall = false;
-            firstYaw = odomPos(0);
-        }
-        odomPos(0) -= firstYaw;
+        
+        odomPos(0) -= 90;
 
     }	
 }

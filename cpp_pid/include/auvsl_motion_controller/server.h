@@ -15,8 +15,6 @@ namespace auvsl
             ~Server();
             Eigen::Vector<double, 3> odomPos;
             void odomCallback(const vectornav_msgs::msg::CommonGroup::SharedPtr msg1);
-            bool  firstCall = true;
-            double firstYaw = 0.0; 
     };
 }
 #endif
