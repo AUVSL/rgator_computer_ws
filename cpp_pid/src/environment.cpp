@@ -138,7 +138,7 @@ namespace auvsl
     }
 
     // generate inputs to Environment based on the vehicle's postion relative to relavent waypoints 
-    float Environment::controllerInput(Eigen::VectorXd odomPos, Eigen::VectorXd waypoints){
+    double Environment::controllerInput(Eigen::VectorXd odomPos, Eigen::VectorXd waypoints){
         // setup the outout variable
         Eigen::VectorXd output(4);
 

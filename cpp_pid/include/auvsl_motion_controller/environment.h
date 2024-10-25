@@ -17,7 +17,7 @@ namespace auvsl
             Eigen::Matrix3d inverseTransform;
             double          angSat(         double angle_in);
             void            initRotation(   Eigen::VectorXd odomPos, Eigen::MatrixXd &path);
-            float controllerInput(Eigen::VectorXd odomPos, Eigen::VectorXd waypoints);
+            double          controllerInput(Eigen::VectorXd odomPos, Eigen::VectorXd waypoints);
             wyptsStopStruct pathProgress(   Eigen::VectorXd odomPos, Eigen::MatrixXd &path, int &pathcount, int pathlength, double &breakingDist0To1);
     };
 }

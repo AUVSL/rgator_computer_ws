@@ -20,7 +20,7 @@ find_package(Boost REQUIRED COMPONENTS system)
 include_directories(include)
 
 # Create executable
-add_executable(${PROJECT_NAME}_main src/main.cpp src/server.cpp src/environment.cpp src/controller.cpp)
+add_executable(${PROJECT_NAME}_main src/main.cpp src/server.cpp src/environment.cpp src/pid.cpp)
 
 # Set dependencies for the target
 ament_target_dependencies(${PROJECT_NAME}_main rclcpp std_msgs vectornav_msgs dbw_msgs)

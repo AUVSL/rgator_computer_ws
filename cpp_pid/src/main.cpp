@@ -9,7 +9,7 @@
 #include "vectornav_msgs/msg/common_group.hpp"
 #include "auvsl_motion_controller/config.h"
 #include "auvsl_motion_controller/server.h"
-#include "auvsl_motion_controller/controller.h"
+#include "auvsl_motion_controller/pid.h"
 #include "auvsl_motion_controller/environment.h"
 
 using std::placeholders::_1;
@@ -54,11 +54,12 @@ void writeToCSVfile(std::string name, Eigen::MatrixXd matrix)
 
 int main(int argc, char **argv)
 {   
+    double T = 50, dt = 1/T, max = 70, min = -70, Kp = 10, Kd = 5, Ki =2
+
     //make a server object that callsback odomentry information, an object to analysis the relevant waypoints, if the vehcile should stop, path errors fed into the controller, and a controller object
     auvsl::Server*     srvrObj = new auvsl::Server;
     auvsl::Environment* envObj = new auvsl::Environment;
-    auvsl::Controller* contObj = new auvsl::Controller;
-    
+    auvsl::PID* pidObj = new auvsl::PID (double dt, double max, double min, double Kp, double Kd, double Ki);
     
     rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("fuzzyControl");
@@ -78,7 +79,7 @@ int main(int argc, char **argv)
   
     int pathcount = 0; int pathlength = path.rows(); double breakingDist0To1 = 0.0;
 
-    rclcpp::Rate rate(50); // ROS Rate at 50Hz
+    rclcpp::Rate rate(T); // ROS Rate at 50Hz
     while (rclcpp::ok()){
         // setup the output message varables
         dbw_msgs::msg::Dbw msg2;
@@ -88,18 +89,17 @@ int main(int argc, char **argv)
         if(srvrObj->odomPos(0) != 0.0) {
             // get the relavent waypoints
             auvsl::wyptsStopStruct waypointsStop = envObj->pathProgress(srvrObj->odomPos, path, pathcount, pathlength, breakingDist0To1); 
-        
 
             // if the stop flag is set to false then use the set vehicle speed. Otherwise, set the velocities to 0 
             if ((waypointsStop.stop == false)) {
                 // determine the position/ orientation inputs and store the velocity outputs of the controller
-                Eigen::Vector<double, NUM_INPUTS> input = envObj->controllerInput(srvrObj->odomPos, waypointsStop.waypoints);
+                double input = envObj->controllerInput(srvrObj->odomPos, waypointsStop.waypoints);
                 double output = contObj->fuzzyController(input); 
 
-                msg2.parkbrake = 0;                     // parking break false
-                msg2.gear      = 1;                     // forward gear
-                msg2.throttle  = 50;  // full throttle is 100
-                msg2.steering  = output.ang * 70;  // full steering is 100
+                msg2.parkbrake = 0;               // parking break false
+                msg2.gear      = 1;               // forward gear
+                msg2.throttle  = 50;              // full throttle is 100
+                msg2.steering  = output; // full steering is 100
 
                 pushBack(dataXYWypts, srvrObj->odomPos(1), srvrObj->odomPos(2), srvrObj->odomPos(0), input(0), input(1), input(2), input(3), output.lin, output.ang);
             } else {
@@ -117,7 +117,7 @@ int main(int argc, char **argv)
             msg2.steering  = 0.0; // zero pecent steering (-100, 100)
         }
 
-        RCLCPP_INFO_STREAM(node->get_logger(), " prk, gr, thtl,  str, brk" << ", " << msg2.parkbrake   << ", " << msg2.gear << ", " << msg2.throttle << ", " << msg2.steering  << ", " << msg2.brake);
+        RCLCPP_INFO_STREAM(node->get_logger(), " prk, gr, thtl, str" << ", " << msg2.parkbrake   << ", " << msg2.gear << ", " << msg2.throttle << ", " << msg2.steering);
         
         // send velocity command to the cmd_vel topic
         cmdPub->publish(msg2); 
