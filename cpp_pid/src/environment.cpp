@@ -1,4 +1,4 @@
-#include "auvsl_motion_controller/environment.h"
+#include "cpp_pid/environment.h"
 
 namespace auvsl
 {
@@ -139,11 +139,7 @@ namespace auvsl
 
     // generate inputs to Environment based on the vehicle's postion relative to relavent waypoints 
     double Environment::controllerInput(Eigen::VectorXd odomPos, Eigen::VectorXd waypoints){
-        // setup the outout variable
-        Eigen::VectorXd output(4);
-
         // load in the current position, the last waypoint passed, and the current waypoint being targeted, and the next waypoint to be targeted
-        double currentAng = Environment::angSat(odomPos(0));
         Eigen::Vector2d currentPos{      odomPos(1),   odomPos(2)};
         Eigen::Vector2d past{   waypoints(0), waypoints(1)};
         Eigen::Vector2d present{waypoints(2), waypoints(3)};
@@ -156,7 +152,7 @@ namespace auvsl
         Eigen::Vector2d pre_norm(-b(1), b(0));
         Eigen::Vector2d unit_vector = pre_norm / pre_norm.norm();
 
-        error = -a.dot(unit_vector);           // distanceLine (the negative is due to how the membership functions interprests what is left/ right for this input)
+        double error = -a.dot(unit_vector);           // distanceLine (the negative is due to how the membership functions interprests what is left/ right for this input)
 
         return error;
     }

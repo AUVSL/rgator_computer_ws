@@ -5,7 +5,7 @@
 
 #include <iostream>
 #include <cmath>
-#include "pid.h"
+#include "cpp_pid/pid.h"
 
 namespace auvsl
 {
@@ -56,3 +56,5 @@ namespace auvsl
         return output;
     }
 }
+
+#endif

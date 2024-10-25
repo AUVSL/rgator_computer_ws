@@ -2,10 +2,11 @@
 
 #ifndef _PID_H_
 #define _PID_H_
-
-class PID
+namespace auvsl
 {
-    public:
+    class PID
+    {
+        public:
             // Contructor and destructor
             PID(double dt, double max, double min, double Kp, double Kd, double Ki);
             ~PID();
@@ -21,6 +22,6 @@ class PID
             double _Kd;         // derivative gain
             double _prev_error; //error from last time step
             double _integral;   // running integrated error
-    }
-
+    };
+}
 #endif

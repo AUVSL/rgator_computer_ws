@@ -7,10 +7,9 @@
 #include "rclcpp/logging.hpp"
 #include "dbw_msgs/msg/dbw.hpp"  
 #include "vectornav_msgs/msg/common_group.hpp"
-#include "auvsl_motion_controller/config.h"
-#include "auvsl_motion_controller/server.h"
-#include "auvsl_motion_controller/pid.h"
-#include "auvsl_motion_controller/environment.h"
+#include "cpp_pid/server.h"
+#include "cpp_pid/pid.h"
+#include "cpp_pid/environment.h"
 
 using std::placeholders::_1;
 
@@ -32,18 +31,14 @@ std::string getCurrentDateTime() {
 }
 
 template<class T>
-void pushBack(T &mtrx, const double &x_position, const double &y_position, const double &theta, const double &input1, const double &input2, const double &input3, const double &input4, const double &linear, const double &angular) {
+void pushBack(T &mtrx, const double &x_position, const double &y_position, const double &theta, const double &input, const double &error) {
     auto n = mtrx.rows();
     mtrx.conservativeResize(n + 1, 9);
     mtrx(n, 0) = x_position;
     mtrx(n, 1) = y_position;
     mtrx(n, 2) = theta;
-    mtrx(n, 3) = input1;
-    mtrx(n, 4) = input2;
-    mtrx(n, 5) = input3;
-    mtrx(n, 6) = input4;
-    mtrx(n, 7) = linear;
-    mtrx(n, 8) = angular;
+    mtrx(n, 3) = input;
+    mtrx(n, 4) = error;
 }
 
 void writeToCSVfile(std::string name, Eigen::MatrixXd matrix)
@@ -54,12 +49,12 @@ void writeToCSVfile(std::string name, Eigen::MatrixXd matrix)
 
 int main(int argc, char **argv)
 {   
-    double T = 50, dt = 1/T, max = 70, min = -70, Kp = 10, Kd = 5, Ki =2
+    double T = 50, dt = 1/T, max = 70, min = -70, Kp = 10, Kd = 5, Ki = 2;
 
     //make a server object that callsback odomentry information, an object to analysis the relevant waypoints, if the vehcile should stop, path errors fed into the controller, and a controller object
     auvsl::Server*     srvrObj = new auvsl::Server;
     auvsl::Environment* envObj = new auvsl::Environment;
-    auvsl::PID* pidObj = new auvsl::PID (double dt, double max, double min, double Kp, double Kd, double Ki);
+    auvsl::PID*         pidObj = new auvsl::PID(dt, max, min, Kp, Kd, Ki);
     
     rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("fuzzyControl");
@@ -94,14 +89,14 @@ int main(int argc, char **argv)
             if ((waypointsStop.stop == false)) {
                 // determine the position/ orientation inputs and store the velocity outputs of the controller
                 double input = envObj->controllerInput(srvrObj->odomPos, waypointsStop.waypoints);
-                double output = contObj->fuzzyController(input); 
+                double output = pidObj->calculate(input); 
 
                 msg2.parkbrake = 0;               // parking break false
                 msg2.gear      = 1;               // forward gear
                 msg2.throttle  = 50;              // full throttle is 100
                 msg2.steering  = output; // full steering is 100
 
-                pushBack(dataXYWypts, srvrObj->odomPos(1), srvrObj->odomPos(2), srvrObj->odomPos(0), input(0), input(1), input(2), input(3), output.lin, output.ang);
+                pushBack(dataXYWypts, srvrObj->odomPos(1), srvrObj->odomPos(2), srvrObj->odomPos(0), input, output);
             } else {
                 msg2.parkbrake = 1;   // parking break false
                 msg2.gear      = 0;   // neutral gear
@@ -134,7 +129,7 @@ int main(int argc, char **argv)
     
     delete srvrObj;
     delete envObj;
-    delete contObj;
+    delete pidObj;
   
     return 0;    
 }
