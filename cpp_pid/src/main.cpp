@@ -33,7 +33,7 @@ std::string getCurrentDateTime() {
 template<class T>
 void pushBack(T &mtrx, const double &x_position, const double &y_position, const double &theta, const double &input, const double &error) {
     auto n = mtrx.rows();
-    mtrx.conservativeResize(n + 1, 9);
+    mtrx.conservativeResize(n + 1, 5);
     mtrx(n, 0) = x_position;
     mtrx(n, 1) = y_position;
     mtrx(n, 2) = theta;
@@ -49,7 +49,7 @@ void writeToCSVfile(std::string name, Eigen::MatrixXd matrix)
 
 int main(int argc, char **argv)
 {   
-    double T = 50, dt = 1/T, max = 70, min = -70, Kp = 10, Ki = 2, Kd = 5;
+    double T = 50, dt = 1/T, max = 70, min = -70, Kp = 100, Ki = 0, Kd = 0;
 
     //make a server object that callsback odomentry information, an object to analysis the relevant waypoints, if the vehcile should stop, path errors fed into the controller, and a controller object
     auvsl::Server*     srvrObj = new auvsl::Server;
@@ -66,9 +66,9 @@ int main(int argc, char **argv)
     auto odomSub = node->create_subscription<vectornav_msgs::msg::CommonGroup>("/vectornav/raw/common", 1, std::bind(&auvsl::Server::odomCallback, srvrObj, std::placeholders::_1));
     
     // set the desired path 
-    Eigen::MatrixXd path {{0,0}, {1, 0}, {2, 0}, {3, 0}};
+    // Eigen::MatrixXd path {{0,0}, {10, 0}, {20, 0}, {30, 0}};
     // Eigen::MatrixXd path {{0,0}, {1,  1}, {2,  2}, {3, 3}};
-    //Eigen::MatrixXd path {{0,0}, {1, -1}, {2, -2}, {3, -3}};
+    Eigen::MatrixXd path {{0,0}, {1, -1}, {2, -2}, {3, -3}};
 
     Eigen::MatrixXd dataXYWypts; 
   
@@ -93,7 +93,7 @@ int main(int argc, char **argv)
 
                 msg2.parkbrake = 0;               // parking break false
                 msg2.gear      = 1;               // forward gear
-                msg2.throttle  = 50;              // full throttle is 100
+                msg2.throttle  = 10;              // full throttle is 100
                 msg2.steering  = output; // full steering is 100
 
                 pushBack(dataXYWypts, srvrObj->odomPos(1), srvrObj->odomPos(2), srvrObj->odomPos(0), input, output);

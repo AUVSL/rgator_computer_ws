@@ -140,19 +140,14 @@ namespace auvsl
     // generate inputs to Environment based on the vehicle's postion relative to relavent waypoints 
     double Environment::controllerInput(Eigen::VectorXd odomPos, Eigen::VectorXd waypoints){
         // load in the current position, the last waypoint passed, and the current waypoint being targeted, and the next waypoint to be targeted
-        Eigen::Vector2d currentPos{      odomPos(1),   odomPos(2)};
+        double currentAng = Environment::angSat(odomPos(0));
         Eigen::Vector2d past{   waypoints(0), waypoints(1)};
         Eigen::Vector2d present{waypoints(2), waypoints(3)};
-        Eigen::Vector2d future{ waypoints(4), waypoints(5)};
 
-        // the 'a' and 'b' vectors are used to compute the scale vector rejection, perpendicular distance, from the current path segement
-        Eigen::Vector2d a = currentPos - past;
-        Eigen::Vector2d b =    present - past;
+        double th1 = std::atan2(  present(1) -    past(1), present(0) -    past(0));
 
-        Eigen::Vector2d pre_norm(-b(1), b(0));
-        Eigen::Vector2d unit_vector = pre_norm / pre_norm.norm();
-
-        double error = -a.dot(unit_vector);           // distanceLine (the negative is due to how the membership functions interprests what is left/ right for this input)
+        // determine the vehicle's orientation difference relative the the current path segement and next path segment
+        double error = Environment::angSat(currentAng-th1);
 
         return error;
     }

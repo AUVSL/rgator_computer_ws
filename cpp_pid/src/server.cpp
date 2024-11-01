@@ -21,7 +21,7 @@ namespace auvsl
     // store the global yaw angle, x position, and y position off the vehicle
     void Server::odomCallback(const vectornav_msgs::msg::CommonGroup::SharedPtr msg1)
     {
-        odomPos(0) = -(msg1->yawpitchroll.x) * M_PI/180.0; // convert degrees to radians
+        odomPos(0) = M_PI/2 - (msg1->yawpitchroll.x) * M_PI/180.0; // convert degrees to radians
         double lat  = (msg1->position.x) * M_PI/180.0;
         double lon  = (msg1->position.y) * M_PI/180.0;
         double alt  = msg1->position.z;
@@ -34,8 +34,5 @@ namespace auvsl
 
         // compute the north east down position in meters from the latitude, longitude, and altitude in degrees
         cppmap3d::geodetic2enu(lat, lon, alt, lat0, lon0, alt0, odomPos(1), odomPos(2), throwAway);
-        
-        odomPos(0) -= 90;
-
     }	
 }

@@ -15,7 +15,7 @@ class DBW(Node):
         self.dbw_sub = self.create_subscription(Dbw, '/control_cmd', self.dbw_callback, 10)
 
         # init publisher
-        self.vcu_pub = self.create_publisher(UInt8MultiArray, '/can_bus_propulsion', 10)
+        self.vcu_pub = self.create_publisher(UInt8MultiArray, '/can_bus/propulsion', 10)
         
         # init timer
         self.timer = self.create_timer(0.1, self.timer_callback)
