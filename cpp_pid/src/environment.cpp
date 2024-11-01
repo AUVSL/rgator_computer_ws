@@ -147,7 +147,7 @@ namespace auvsl
         double th1 = std::atan2(  present(1) -    past(1), present(0) -    past(0));
 
         // determine the vehicle's orientation difference relative the the current path segement and next path segment
-        double error = Environment::angSat(currentAng-th1);
+        double error = Environment::angSat(th1-currentAng);
 
         return error;
     }
