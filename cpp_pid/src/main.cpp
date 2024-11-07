@@ -49,7 +49,7 @@ void writeToCSVfile(std::string name, Eigen::MatrixXd matrix)
 
 int main(int argc, char **argv)
 {   
-    double T = 50, dt = 1/T, max = 70, min = -70, Kp = 100, Ki = 0, Kd = 0;
+    // double T = 50, dt = 1/T, max = 70, min = -70, Kp = 100, Ki = 0, Kd = 0;
 
     //make a server object that callsback odomentry information, an object to analysis the relevant waypoints, if the vehcile should stop, path errors fed into the controller, and a controller object
     auvsl::Server*     srvrObj = new auvsl::Server;
@@ -66,8 +66,8 @@ int main(int argc, char **argv)
     auto odomSub = node->create_subscription<vectornav_msgs::msg::CommonGroup>("/vectornav/raw/common", 1, std::bind(&auvsl::Server::odomCallback, srvrObj, std::placeholders::_1));
     
     // set the desired path 
-    // Eigen::MatrixXd path {{0,0}, {10, 0}, {20, 0}, {30, 0}};
-    // Eigen::MatrixXd path {{0,0}, {1,  1}, {2,  2}, {3, 3}};
+    Eigen::MatrixXd path {{0,0}, {10, 0}, {20, 0}, {30, 0}};
+    Eigen::MatrixXd path {{0,0}, {1,  1}, {2,  2}, {3, 3}};
     Eigen::MatrixXd path {{0,0}, {1, -1}, {2, -2}, {3, -3}};
 
     Eigen::MatrixXd dataXYWypts; 
@@ -94,7 +94,7 @@ int main(int argc, char **argv)
                 msg2.parkbrake = 0;               // parking break false
                 msg2.gear      = 1;               // forward gear
                 msg2.throttle  = 10;              // full throttle is 100
-                msg2.steering  = output; // full steering is 100
+                msg2.steering  = 0; // full steering is 100
 
                 pushBack(dataXYWypts, srvrObj->odomPos(1), srvrObj->odomPos(2), srvrObj->odomPos(0), input, output);
             } else {
@@ -128,8 +128,8 @@ int main(int argc, char **argv)
     writeToCSVfile(dateTime, dataXYWypts);
     
     delete srvrObj;
-    delete envObj;
-    delete pidObj;
+    // delete envObj;
+    // delete pidObj;
   
     return 0;    
 }
