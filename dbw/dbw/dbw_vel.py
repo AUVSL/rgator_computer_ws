@@ -27,7 +27,8 @@ class DBW(Node):
 
         self.ang_vel_step_size = 1/1024
         self.ang_vel_min       = -31.25 # rad/s
-        self.ang_vel_eff_max   =  31.25 # rad/s
+        self.ang_vel_eff_min   =  0.5 # rad/s
+        self.ang_vel_eff_max   =  0.5 # rad/s
 
         self.lin_percent_range  = 100.0
         self.ang_percent_range  = 200.0
@@ -37,7 +38,7 @@ class DBW(Node):
         self.lin_spd_range = self.lin_vel_eff_max / self.lin_vel_step_size
 
         self.ang_offset    = abs(self.ang_vel_min / self.ang_vel_step_size)
-        self.ang_spd_range = (self.ang_vel_eff_max - self.ang_vel_min) / self.ang_vel_step_size
+        self.ang_spd_range = (self.ang_vel_eff_max - self.ang_vel_eff_min) / self.ang_vel_step_size
 
         # can messages definations
         # sent messages (arbitration_id = priority 0x18 & pgn # in hexidecimal & device address in hexicemial, data = initial hex command byte, the remaining bits are defaults with unassigned bytes being set to 0xFF or 0x00 arbitrary
