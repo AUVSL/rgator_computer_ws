@@ -81,5 +81,131 @@ or
     ros2 launch vectornav vectornav.launch.py
     ros2 run gps_nav track_log
 
-    
-    
+___
+
+# ROS2 Workspace Setup and Running Instructions
+
+This guide provides detailed instructions on how to create a ROS2 workspace, clone necessary packages, build the workspace, and run the program. Follow the steps carefully to get your code up and running.
+
+---
+
+## Creating the Workspace
+
+### Step 1: Create a ROS Workspace
+```bash
+cd
+mkdir -p ~/ros2_ws/src
+cd ~/ros2_ws/src
+```
+
+### Step 2: Clone Necessary Package Repositories into the `src` Folder
+
+#### a. Path Message
+```bash
+git clone https://github.com/AUVSL/path_msg.git
+```
+
+#### b. Motion Controller
+```bash
+git clone https://github.com/AUVSL/auvsl_motion_controller
+```
+
+#### c. Vectornav Messages
+```bash
+git clone -b ros2 https://github.com/dawonn/vectornav.git
+```
+
+#### d. Rgator Interface Tester
+```bash
+git clone https://github.com/AUVSL/rgator_interface_tester.git
+```
+
+#### e. Rgator Computer Workspace
+```bash
+git clone https://github.com/AUVSL/rgator_computer_ws.git
+```
+
+---
+
+### Step 3: Update the cpp_pid Package (Optional)
+Inside the computer workspace file package, locate the `cpp_pid` package and update `main.cpp` as follows:
+
+#### a. Uncomment the following constants:
+```cpp
+double T = 50;
+double dt = 1/T;
+double max = 70;
+double min = -70;
+double Kp = 100;
+double Ki = 0;
+double Kd = 0;
+```
+
+#### b. Choose one path of the three and uncomment the appropriate line:
+```cpp
+// Eigen::MatrixXd path {{0,0}, {10, 0}, {20, 0}, {30, 0}}; 
+// Eigen::MatrixXd path {{0,0}, {1,  1}, {2,  2}, {3, 3}};
+// Eigen::MatrixXd path {{0,0}, {1, -1}, {2, -2}, {3, -3}};
+```
+
+---
+
+### Step 4: Compile the Packages
+```bash
+cd ~/ros2_ws/
+source /opt/ros/humble/setup.bash
+rosdep install --from-paths src --ignore-src -r
+colcon build
+```
+
+---
+
+## Running the Program
+
+The program requires four separate terminals. Make sure to run each terminal setup in order.
+
+### Terminal 1: Run Vectornav
+```bash
+cd ~/ros2_ws/src
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+ros2 run vectornav vectornav
+```
+
+### Terminal 2: Run DBW Velocity Simulator
+```bash
+cd ~/ros2_ws/src
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+ros2 run dbw dbw_vel_sim
+```
+
+### Terminal 3: Launch Motion Controller
+```bash
+cd ~/ros2_ws/src
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+ros2 launch auvsl_motion_controller outdoor.launch.py
+```
+
+### Terminal 4: Run Rgator Interface Tester
+```bash
+cd ~/ros2_ws/src
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+cd ~/ros2_ws/src/rgator_interface_tester/r_gator_model
+python3 main.py
+```
+
+---
+
+## Tips and Troubleshooting
+- Make sure to have ROS2 Humble installed and properly configured on your system.
+- If you encounter errors during the build process, try running:
+  ```bash
+  colcon clean
+  colcon build --packages-select <package_name>
+  ```
+- Verify that each package has been correctly cloned and built before running.
+
+---
