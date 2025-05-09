@@ -50,8 +50,7 @@ git clone https://github.com/AUVSL/rgator_computer_ws.git
 
 
 ## Running the Program
-
-### Terminal 2: Run DBW Velocity Simulator
+### Terminal: Run DBW Velocity Simulator
 ```bash
 cd ~/ros2_ws/src
 source /opt/ros/humble/setup.bash
