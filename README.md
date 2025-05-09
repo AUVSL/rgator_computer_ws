@@ -43,7 +43,7 @@ cd ~/ros2_ws/src
 
 ### Step 2: Clone Necessary Package Repositories into the `src` Folder
 
-#### e. Rgator Computer Workspace
+#### Terminal: Get Rgator Computer Workspace
 ```bash
 git clone https://github.com/AUVSL/rgator_computer_ws.git
 ```
