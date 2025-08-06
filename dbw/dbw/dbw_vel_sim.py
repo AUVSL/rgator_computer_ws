@@ -27,7 +27,7 @@ class DBW(Node):
         self.count = 0
         self.lin_vel_step_size = 1/128
         self.lin_vel_min       = -250  # km/hr
-        self.lin_vel_eff_max   =  40   # km/h
+        self.lin_vel_eff_max   =  4    # km/h
 
         self.ang_vel_step_size = 1/1024
         self.ang_vel_min       = -31.25 # rad/s
